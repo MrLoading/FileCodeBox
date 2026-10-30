@@ -22,11 +22,12 @@ from core.storage import StoredFile, WebDAVFileStorage
 
 def make_dav_app(root: Path) -> web.Application:
     """Minimal WebDAV server: HEAD/GET/PUT/DELETE/MKCOL/PROPFIND over `root`."""
+    root = root.resolve()
 
     def _fs_path(request: web.Request) -> Path | None:
         rel = request.match_info.get("path", "")
         target = (root / rel).resolve()
-        if not str(target).startswith(str(root)):
+        if not target.is_relative_to(root):
             return None
         return target
 

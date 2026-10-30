@@ -4,6 +4,9 @@
 避免后续改动把它们悄悄丢掉。
 """
 import re
+import os
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -17,11 +20,25 @@ class DockerRuntimeTuningTests(unittest.TestCase):
     def test_glibc_heap_trim_threshold_is_set(self):
         self.assertIn("MALLOC_TRIM_THRESHOLD_=65536", self.dockerfile)
 
+    @unittest.skipUnless(os.name == "posix", "Container startup uses a POSIX shell")
     def test_keep_alive_timeout_is_configurable(self):
         self.assertIn("TIMEOUT_KEEP_ALIVE=5", self.dockerfile)
-        # CMD 必须把环境变量透传给 uvicorn，否则 ENV 只是摆设。
-        self.assertIn("--timeout-keep-alive", self.dockerfile)
-        self.assertIn("${TIMEOUT_KEEP_ALIVE:-5}", self.dockerfile)
+        # Execute the shared startup script with a harmless uvicorn stub.
+        with tempfile.TemporaryDirectory() as directory:
+            stub = Path(directory) / "uvicorn"
+            stub.write_text('#!/bin/sh\nprintf "%s\\n" "$@"\n', encoding="utf-8")
+            stub.chmod(0o755)
+            result = subprocess.run(
+                ["/bin/sh", str(ROOT / "docker/start.sh")],
+                env={**os.environ, "PATH": directory, "TIMEOUT_KEEP_ALIVE": "17", "APP_ENV": "production", "ACCESS_LOG": "false"},
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        arguments = result.stdout.splitlines()
+        self.assertEqual(arguments[:2], ["fengchao:create_app", "--factory"])
+        self.assertEqual(arguments[arguments.index("--timeout-keep-alive") + 1], "17")
+        self.assertIn("--no-access-log", arguments)
 
 
 class PerformanceDependencyTests(unittest.TestCase):

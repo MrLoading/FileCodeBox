@@ -1,5 +1,13 @@
 version: 2
 updates:
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
   # Runtime deps. requirements.txt pins direct deps; requirements.lock.txt is
   # the hashed, transitive-resolved lockfile. Dependabot raises version PRs
   # against requirements.txt; regenerate the lockfile in the same PR

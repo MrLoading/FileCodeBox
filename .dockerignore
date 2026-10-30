@@ -27,9 +27,11 @@ htmlcov/
 .DS_Store
 ._*
 
-# Frontend source (will be built from GitHub)
+# Legacy frontend source
 fcb-fronted/
 themes/
+**/node_modules/
+**/dist/
 
 # Test files
 test_*.py
@@ -48,3 +50,25 @@ docker-compose.yml
 
 # Claude
 .claude/
+
+# Local credentials and agent state must never enter the build context.
+**/.env
+**/.env.*
+**/.npmrc
+**/.pypirc
+**/.netrc
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/id_rsa*
+**/id_ed25519*
+.aws/
+.ssh/
+.codex/
+.agents/
+.codegraph/
+.mypy_cache/
+.ruff_cache/
+**/*.tsbuildinfo
+docker-compose.*.yml
