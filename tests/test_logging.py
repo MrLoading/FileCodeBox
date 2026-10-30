@@ -48,12 +48,14 @@ class LoggingConfigurationTests(unittest.TestCase):
     def test_log_file_configuration_is_bounded_in_docker_compose(self):
         compose = Path("docker-compose.yml").read_text(encoding="utf-8")
         dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+        startup = Path("docker/start.sh").read_text(encoding="utf-8")
 
         self.assertIn('max-size: "10m"', compose)
         self.assertIn('max-file: "3"', compose)
         self.assertIn('APP_ENV="production"', dockerfile)
         self.assertIn('LOG_LEVEL="warning"', dockerfile)
-        self.assertIn("--no-access-log", dockerfile)
+        self.assertIn('CMD ["sh", "/app/start.sh"]', dockerfile)
+        self.assertIn("--no-access-log", startup)
 
 
 if __name__ == "__main__":
