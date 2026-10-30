@@ -1,98 +1,78 @@
-<div align="center">
+# FileCodeBox · 丰巢快递柜 UI
 
-<img src="./docs/public/logo_small.png" alt="FileCodeBox" width="96" />
+本仓库是 [vastsa/FileCodeBox](https://github.com/vastsa/FileCodeBox) 的 fork，将公开存取页面更新为 **丰巢快递柜风格的 UI**：像使用快递柜一样，选择「存」分享文件或文本，选择「取」输入取件码领取内容。
 
-# FileCodeBox
+[本 fork](https://github.com/MrLoading/FileCodeBox) · [上游项目](https://github.com/vastsa/FileCodeBox) · [English](./readme_en.md)
 
-### 像取快递一样取文件
+![丰巢风格首页：存与取两个入口](./.github/images/readme/banner_zh.webp)
 
-一个轻量、现代的自托管文件分享工具。无需注册，上传后获得口令，对方输入即可取件。
+## 本 fork 的更新
 
-[在线演示](https://share.lanol.cn)　·　[使用文档](https://fcb-docs.aiuo.net/)　·　[English](./readme_en.md)
+- 首页提供同等大小的「存」「取」入口，存取操作各有独立页面。
+- 存件支持文本、文件、拖拽和粘贴；输入文本或选择文件后，对应区域自动展开，多文件自动打包为 ZIP。
+- 取件支持屏幕数字键盘、键盘输入和粘贴，点击「立即提取」后领取内容；旧取件链接仍可使用。
+- 支持中英文、深浅色切换，保留原有后台管理功能，以及官方 2023 / 2024 主题。
 
-[![Release](https://img.shields.io/github/v/release/vastsa/FileCodeBox?style=flat-square&color=111111)](https://github.com/vastsa/FileCodeBox/releases/latest)
-[![Docker Pulls](https://img.shields.io/docker/pulls/lanol/filecodebox?style=flat-square&logo=docker&color=111111)](https://hub.docker.com/r/lanol/filecodebox)
-[![Stars](https://img.shields.io/github/stars/vastsa/FileCodeBox?style=flat-square&logo=github&color=111111)](https://github.com/vastsa/FileCodeBox/stargazers)
-[![License](https://img.shields.io/github/license/vastsa/FileCodeBox?style=flat-square&color=111111)](./LICENSE)
+## 存取步骤
 
-<br />
+### 存：分享文本或文件
 
-<img src="./.github/images/readme/banner_zh.webp" alt="FileCodeBox" width="100%" />
+首页点击「存」，输入文本或选择、拖入文件，设置过期时间后点击「生成取件码」。发送成功后，将取件码或取件链接分享给对方。
 
-</div>
+![存件页：文本与文件入口，以及过期时间设置](./.github/images/readme/send.webp)
 
-## 一条命令开始
+### 取：输入取件码领取
+
+首页点击「取」，通过屏幕数字键盘、键盘或粘贴输入取件码，再点击「立即提取」下载文件或查看文本。
+
+![取件页：输入取件码并确认提取](./.github/images/readme/retrieve.webp)
+
+截图来自本 fork 的实际界面，取件码为演示数据。
+
+## Docker 部署
+
+准备 Git、Docker 和 Docker Compose v2，在本 fork 的仓库根目录构建并启动：
 
 ```bash
-docker run -d --restart unless-stopped \
-  -p 12345:12345 \
-  -v ./data:/app/data \
-  -e APP_ENV=production \
-  -e LOG_LEVEL=warning \
-  --log-opt max-size=10m \
-  --log-opt max-file=3 \
-  --name filecodebox \
-  lanol/filecodebox:2.8.5 # x-release-please-version
+git clone --branch master https://github.com/MrLoading/FileCodeBox.git
+cd FileCodeBox
+docker compose up -d --build
 ```
 
-访问 `http://localhost:12345`，完成首次初始化。生产环境建议固定版本号；`latest` 指向最新正式版。
-## AI 客户端与 MCP
+访问 `http://服务器IP:12345`，首次访问按向导设置管理员密码、上传限制和取件策略。新安装默认使用丰巢主题；后台入口为 `/#/admin`。
 
-FileCodeBox 支持 **MCP Streamable HTTP**，可从兼容的 AI 客户端创建文本和文件分享。服务端点为 `http://<你的服务器地址>:12345/mcp`（本机部署可用 `http://localhost:12345/mcp`），默认无需 Token。工具包括 `share_text` 和 `share_file`。若关闭游客上传或启用 MCP Token 校验，客户端需配置 `Authorization: Bearer <管理员 Token>`。
+**本 fork 通过源码构建部署。** 仓库内的 Dockerfile 会编译 `frontend/`，在固定的官方 `lanol/filecodebox:2.8.5` 后端镜像上加入丰巢主题，生成本地镜像 `filecodebox-fengchao:local`。宿主机无需安装 Node.js 或 Python，首次构建需要下载基础镜像和依赖。
 
-详见 [MCP 接入指南](https://fcb-docs.aiuo.net/guide/mcp)。
+`docker-compose.yml` 默认映射 `12345:12345`，使用命名卷 `fcb-data` 挂载到 `/app/data` 保存数据库、配置和文件。需要修改访问端口时，调整冒号左侧的宿主机端口。
 
-## 简单，但足够强大
+### 从已有部署升级
 
-<table>
-<tr>
-<td width="33%" valign="top"><b>即传即取</b><br /><sub>文件与文本统一分享，支持拖拽、粘贴、批量与分片上传。</sub></td>
-<td width="33%" valign="top"><b>按需失效</b><br /><sub>按时间、取件次数或永久保存，自动清理过期内容。</sub></td>
-<td width="33%" valign="top"><b>数据自主</b><br /><sub>本地、S3、OneDrive、WebDAV 与 OpenDAL，数据留在自己的基础设施。</sub></td>
-</tr>
-</table>
+先备份数据，并让新容器继续挂载原来的 `/app/data`。默认 Compose 会创建当前项目自己的命名卷，不会自动读取旧容器的数据。
 
-## 从分享，到管理
+- **原先使用宿主机目录**：将服务中的 `fcb-data:/app/data:rw` 改为原目录，例如 `/原数据目录:/app/data:rw`。
+- **原先使用 Docker 命名卷**：保持服务中的挂载不变，将文件末尾的卷配置改为以下内容，填入原卷的完整名称：
 
-<table>
-<tr>
-<td width="50%"><img src="./.github/images/readme/send.webp" alt="文件发送页面" /></td>
-<td width="50%"><img src="./.github/images/readme/dashboard.webp" alt="管理仪表盘" /></td>
-</tr>
-</table>
+```yaml
+volumes:
+  fcb-data:
+    external: true
+    name: 你的现有数据卷名
+```
 
-<table>
-<tr>
-<td width="33%"><img src="./.github/images/readme/login.webp" alt="管理登录" /></td>
-<td width="33%"><img src="./.github/images/readme/files.webp" alt="文件管理" /></td>
-<td width="33%"><img src="./.github/images/readme/settings.webp" alt="系统设置" /></td>
-</tr>
-</table>
+原容器占用 `12345` 端口时，先停止原容器，再启动本 fork。已有安装会保留原主题选择；登录 `/#/admin`，在「系统设置 → 界面主题」选择 **Fengchao** 并保存。
 
-<div align="center">
+### 后续更新与常用命令
 
-`FastAPI`　`Vue 3`　`SQLite`　`Docker`　`S3`　`WebDAV`　`Dark Mode`
+```bash
+git pull --ff-only
+docker compose up -d --build
+```
 
-</div>
+查看日志用 `docker compose logs -f --tail=100`，停止服务用 `docker compose down`。保留数据时不要添加 `-v`。
 
-## 继续了解
+## Fork 来源与致谢
 
-- [快速开始](https://fcb-docs.aiuo.net/guide/getting-started) · 部署、初始化与升级
-- [存储配置](https://fcb-docs.aiuo.net/guide/storage) · 本地与对象存储
-- [安全设置](https://fcb-docs.aiuo.net/guide/security) · 限流、会话与访问保护
-- [API 文档](https://fcb-docs.aiuo.net/api/) · 上传、取件与管理接口
-- [前端源码](https://github.com/vastsa/FileCodeBoxFronted) · 当前 2024 主题
-
-## 参与项目
-
-欢迎 [提交 Issue](https://github.com/vastsa/FileCodeBox/issues/new/choose) 或 Pull Request。项目基于 [LGPL-3.0](./LICENSE) 发布。
-
-## 免责声明
-
-本项目仅供合法的文件与文本分享场景使用。请勿上传、存储或传播违法、侵权或未经授权的内容；使用者应自行承担部署、数据合规与内容管理责任。
-
-<div align="center">
-
-**如果 FileCodeBox 对你有帮助，欢迎点亮一个 Star。**
-
-</div>
+- 后端上游：[vastsa/FileCodeBox](https://github.com/vastsa/FileCodeBox)，本 fork 的 Docker 构建基于官方 `2.8.5` 镜像。
+- 前端来源：[vastsa/FileCodeBoxFronted](https://github.com/vastsa/FileCodeBoxFronted)，导入版本为 `2d6173e0d4fe4d543479143842408abb50bd5f9b`。感谢 Lan 和原项目贡献者。
+- 丰巢主题源码与开发说明：[frontend/README.md](./frontend/README.md)；完整前端来源记录：[frontend/UPSTREAM.md](./frontend/UPSTREAM.md)。
+- 项目沿用 [LGPL-3.0 许可证](./LICENSE)。上游通用功能文档见 [FileCodeBox 文档](https://fcb-docs.aiuo.net/)。

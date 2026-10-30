@@ -1,98 +1,76 @@
-<div align="center">
+# FileCodeBox · Fengchao Locker UI
 
-<img src="./docs/public/logo_small.png" alt="FileCodeBox" width="96" />
+This is a fork of [vastsa/FileCodeBox](https://github.com/vastsa/FileCodeBox) with a **Fengchao parcel-locker-style UI**. Choose **Send** to share text or files, or **Receive** to retrieve them with a code.
 
-# FileCodeBox
+[This fork](https://github.com/MrLoading/FileCodeBox) · [Upstream](https://github.com/vastsa/FileCodeBox) · [简体中文](./readme.md)
 
-### Share files like picking up a package
+![Fengchao home page: Send and Receive](./.github/images/readme/banner_zh.webp)
 
-A lightweight, modern, self-hosted file sharing service. No account required—upload, share the passcode, and retrieve.
+## Changes in this fork
 
-[Live Demo](https://share.lanol.cn)　·　[Documentation](https://fcb-docs.aiuo.net/en/)　·　[简体中文](./readme.md)
+- Separate Send and Receive pages with equally prominent home-page actions.
+- Text and file inputs expand when used; multiple files are automatically packed into a ZIP.
+- An on-screen number pad, keyboard input and paste for retrieval, followed by explicit confirmation. Existing retrieval links remain supported.
+- Chinese and English, light and dark modes, existing administration features, and the official 2023 / 2024 themes.
 
-[![Release](https://img.shields.io/github/v/release/vastsa/FileCodeBox?style=flat-square&color=111111)](https://github.com/vastsa/FileCodeBox/releases/latest)
-[![Docker Pulls](https://img.shields.io/docker/pulls/lanol/filecodebox?style=flat-square&logo=docker&color=111111)](https://hub.docker.com/r/lanol/filecodebox)
-[![Stars](https://img.shields.io/github/stars/vastsa/FileCodeBox?style=flat-square&logo=github&color=111111)](https://github.com/vastsa/FileCodeBox/stargazers)
-[![License](https://img.shields.io/github/license/vastsa/FileCodeBox?style=flat-square&color=111111)](./LICENSE)
+## Send and Receive
 
-<br />
+### Send text or files
 
-<img src="./.github/images/readme/banner_en.webp" alt="FileCodeBox" width="100%" />
+Choose **Send**, enter text or select/drop files, set an expiration, then generate a retrieval code. Share the code or retrieval link with the recipient.
 
-</div>
+![Send page: text, files and expiration](./.github/images/readme/send.webp)
 
-## Start with one command
+### Receive with a code
+
+Choose **Receive**, enter or paste the code using the number pad or keyboard, then confirm to download the file or view the text.
+
+![Receive page: enter a code and confirm](./.github/images/readme/retrieve.webp)
+
+These three screenshots show the actual Chinese interface with demo data. The UI also supports English.
+
+## Docker deployment
+
+Install Git, Docker and Docker Compose v2, then build and start from this fork's repository root:
 
 ```bash
-docker run -d --restart unless-stopped \
-  -p 12345:12345 \
-  -v ./data:/app/data \
-  -e APP_ENV=production \
-  -e LOG_LEVEL=warning \
-  --log-opt max-size=10m \
-  --log-opt max-file=3 \
-  --name filecodebox \
-  lanol/filecodebox:2.8.5 # x-release-please-version
+git clone --branch master https://github.com/MrLoading/FileCodeBox.git
+cd FileCodeBox
+docker compose up -d --build
 ```
 
-Open `http://localhost:12345` and complete first-run setup. Pin a version in production; `latest` tracks the newest stable release.
-## MCP for AI clients
+Open `http://SERVER_IP:12345` and complete the first-run setup, including an administrator password. New installations use Fengchao by default. Administration is available at `/#/admin`.
 
-FileCodeBox supports **MCP over Streamable HTTP**, allowing compatible AI clients to create text and file shares. Use `http://<your-server>:12345/mcp` (or `http://localhost:12345/mcp` for a local instance). No token is required by default. The available tools are `share_text` and `share_file`. If guest uploads are disabled or MCP token validation is enabled, configure `Authorization: Bearer <admin token>` in the client.
+**Build this fork from source.** The repository's Dockerfile compiles `frontend/` and adds Fengchao to the pinned official `lanol/filecodebox:2.8.5` backend image. Compose builds the local image `filecodebox-fengchao:local`, publishes port `12345`, and mounts the `fcb-data` named volume at `/app/data`. Node.js and Python are not required on the host; the first build downloads base images and dependencies. To change the public port, edit the left side of `12345:12345`.
 
-See the [MCP integration guide](https://fcb-docs.aiuo.net/en/guide/mcp).
+### Upgrading an existing installation
 
-## Simple, yet capable
+Back up your data and reuse the existing `/app/data` mount. The default Compose file creates a volume for the current project and does not automatically import another container's data.
 
-<table>
-<tr>
-<td width="33%" valign="top"><b>Share instantly</b><br /><sub>Files and text in one flow, with drag, paste, batch, and chunked uploads.</sub></td>
-<td width="33%" valign="top"><b>Expire on your terms</b><br /><sub>Expire by time or retrieval count, keep forever, and clean up automatically.</sub></td>
-<td width="33%" valign="top"><b>Own your data</b><br /><sub>Local, S3, OneDrive, WebDAV, and OpenDAL storage on infrastructure you control.</sub></td>
-</tr>
-</table>
+- For an existing host directory, replace the service's `fcb-data:/app/data:rw` mount with `/path/to/existing/data:/app/data:rw`.
+- For an existing Docker volume, keep the service mount and replace the top-level volume definition at the end of `docker-compose.yml`:
 
-## From sharing to administration
+```yaml
+volumes:
+  fcb-data:
+    external: true
+    name: your-existing-volume-name
+```
 
-<table>
-<tr>
-<td width="50%"><img src="./.github/images/readme/send.webp" alt="File sharing screen" /></td>
-<td width="50%"><img src="./.github/images/readme/dashboard.webp" alt="Admin dashboard" /></td>
-</tr>
-</table>
+Stop the previous container if it occupies port `12345`. Existing installations retain their theme selection: log in at `/#/admin`, select **Fengchao** under **System Settings → Theme Selection**, and save.
 
-<table>
-<tr>
-<td width="33%"><img src="./.github/images/readme/login.webp" alt="Admin login" /></td>
-<td width="33%"><img src="./.github/images/readme/files.webp" alt="File management" /></td>
-<td width="33%"><img src="./.github/images/readme/settings.webp" alt="System settings" /></td>
-</tr>
-</table>
+### Subsequent updates
 
-<div align="center">
+```bash
+git pull --ff-only
+docker compose up -d --build
+```
 
-`FastAPI`　`Vue 3`　`SQLite`　`Docker`　`S3`　`WebDAV`　`Dark Mode`
+Use `docker compose logs -f --tail=100` for logs and `docker compose down` to stop. Omit `-v` to keep the data volume.
 
-</div>
+## Fork attribution
 
-## Learn more
-
-- [Getting started](https://fcb-docs.aiuo.net/en/guide/getting-started) · deployment, setup, and upgrades
-- [Storage](https://fcb-docs.aiuo.net/en/guide/storage) · local and object storage
-- [Security](https://fcb-docs.aiuo.net/en/guide/security) · rate limits, sessions, and access protection
-- [API reference](https://fcb-docs.aiuo.net/en/api/) · upload, retrieval, and administration
-- [Frontend source](https://github.com/vastsa/FileCodeBoxFronted) · the active 2024 theme
-
-## Contributing
-
-[Issues](https://github.com/vastsa/FileCodeBox/issues/new/choose) and pull requests are welcome. FileCodeBox is released under [LGPL-3.0](./LICENSE).
-
-## Disclaimer
-
-Use FileCodeBox only for lawful file and text sharing. Do not upload, store, or distribute illegal, infringing, or unauthorized content. Operators are responsible for deployment security, data compliance, and content moderation.
-
-<div align="center">
-
-**If FileCodeBox helps you, consider leaving a Star.**
-
-</div>
+- Backend: [vastsa/FileCodeBox](https://github.com/vastsa/FileCodeBox); the Docker build uses the official `2.8.5` image.
+- Frontend: [vastsa/FileCodeBoxFronted](https://github.com/vastsa/FileCodeBoxFronted), imported at `2d6173e0d4fe4d543479143842408abb50bd5f9b`. Thanks to Lan and the original contributors.
+- Fengchao source and development instructions: [frontend/README.md](./frontend/README.md). Source attribution: [frontend/UPSTREAM.md](./frontend/UPSTREAM.md).
+- License: [LGPL-3.0](./LICENSE). General upstream documentation: [FileCodeBox docs](https://fcb-docs.aiuo.net/en/).

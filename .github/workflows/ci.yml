@@ -15,16 +15,35 @@ permissions:
   contents: read
 
 jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm audit --audit-level=high
+      - run: npm test
+      - run: npm run build
+
   test:
     name: Lint and test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
 
@@ -34,7 +53,7 @@ jobs:
           # The hashed lockfile is the deploy artifact; install from it with
           # --require-hashes so CI fails on lockfile drift, exactly like the
           # Docker build does.
-          pip install --require-hashes -r requirements.lock.txt
+          pip install --require-hashes --only-binary=:all: -r requirements.lock.txt
           pip install pytest pytest-asyncio httpx 'moto[s3,server]' mypy
 
       - name: Ruff
