@@ -12,9 +12,14 @@
 }
 .locker-brand {
   display: block;
+  width: fit-content;
   overflow-wrap: anywhere;
   font-size: 16px;
   font-weight: 500;
+  text-underline-offset: 4px;
+}
+.locker-brand:hover {
+  text-decoration: underline;
 }
 .locker-main {
   flex: 1;
@@ -190,6 +195,7 @@
 .dark .locker-choice-retrieve svg {
   color: #78d5b4;
 }
+.locker-brand:focus-visible,
 .locker-choice:focus-visible,
 .locker-button:focus-visible,
 .locker-footer-link:focus-visible,

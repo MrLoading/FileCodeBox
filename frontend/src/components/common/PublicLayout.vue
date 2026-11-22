@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { defineAsyncComponent, nextTick, ref, useTemplateRef, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ROUTES } from '@/constants'
 import { useConfigStore } from '@/stores/configStore'
 import '@/assets/style/public.css'
 
@@ -24,7 +25,9 @@ watchEffect(() => {
 <template>
   <div class="locker-page" :class="{ 'locker-page-narrow': narrow }">
     <header class="locker-header">
-      <span class="locker-brand">{{ config.name || 'FileCodeBox' }}</span>
+      <RouterLink class="locker-brand" :to="ROUTES.HOME">
+        {{ config.name || 'FileCodeBox' }}
+      </RouterLink>
     </header>
     <main class="locker-main">
       <section class="locker-content" :class="{ 'locker-content-narrow': narrow }">
